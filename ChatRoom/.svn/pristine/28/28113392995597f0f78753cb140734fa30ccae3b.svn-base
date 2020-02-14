@@ -1,0 +1,34 @@
+import javax.swing.*;
+import java.awt.event.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.sql.*;
+
+//了解即可
+public class LoginWindow {
+	public static void main(String args[]) {
+		JFrame jframe = new JFrame("登录窗口");// 建房子（外围墙体）
+		jframe.setSize(400, 300);
+
+		JPanel jpanel = new JPanel();// 容器//安装窗户
+		jpanel.setLayout(null);
+
+		JButton loginButton = new JButton("登录");// 组件//窗户上安装玻璃
+		loginButton.setBounds(130, 200, 100, 30);
+
+		JLabel accountLabel = new JLabel("帐号：");
+		accountLabel.setBounds(50, 70, 100, 30);
+
+		JTextField accountField = new JTextField("");
+		accountField.setBounds(100, 70, 150, 30);
+
+		jpanel.add(loginButton);
+		jpanel.add(accountLabel);
+		jpanel.add(accountField);
+
+		jframe.setContentPane(jpanel);
+		jframe.setResizable(false);
+		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		jframe.setVisible(true);// 可见
+	}
+}

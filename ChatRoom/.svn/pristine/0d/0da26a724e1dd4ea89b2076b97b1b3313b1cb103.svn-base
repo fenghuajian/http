@@ -1,0 +1,112 @@
+import javax.swing.*;
+
+import java.awt.event.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.sql.*;
+
+//了解即可
+public class LoginWindow implements ActionListener{
+	JTextField accountField;//成员变量
+	JFrame jframe;
+	public LoginWindow()
+	{
+		jframe = new JFrame("登录窗口");// 建房子（外围墙体）
+		jframe.setSize(400, 300);
+
+		JPanel jpanel = new JPanel();// 容器//安装窗户
+		jpanel.setLayout(null);
+
+		JButton loginButton = new JButton("登录");// 组件//窗户上安装玻璃
+		loginButton.setBounds(130, 200, 100, 30);
+		loginButton.addActionListener(this);
+
+		JLabel accountLabel = new JLabel("帐号：");
+		accountLabel.setBounds(50, 70, 100, 30);
+
+		accountField = new JTextField("");
+		accountField.setBounds(100, 70, 150, 30);
+
+		jpanel.add(loginButton);
+		jpanel.add(accountLabel);
+		jpanel.add(accountField);
+
+		jframe.setContentPane(jpanel);
+		jframe.setResizable(false);
+		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		jframe.setVisible(true);// 可见
+	}
+	public static void main(String args[]) {
+		new LoginWindow();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		/*
+		 * 逻辑（把用户名、ip、port添加到数据库）
+		 * 1、连接数据库
+		 */
+		Connection conn=null;
+		try {
+			InetAddress addr = InetAddress.getLocalHost();
+		    String ip=addr.getHostAddress();
+		    
+			String url="jdbc:oracle:thin:@39.108.161.127:1521:orcl";
+			
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			conn=DriverManager.getConnection(url, "liwei", "lw1234");
+			conn.setAutoCommit(false);
+			
+			String sql="SELECT * FROM tb_users WHERE username=?";
+			PreparedStatement pstmt=conn.prepareStatement(sql);
+			pstmt.setString(1, accountField.getText());
+			ResultSet rs=pstmt.executeQuery();
+			if(rs.next())
+			{
+				sql="UPDATE tb_users SET ip=? WHERE username=?";
+				pstmt=conn.prepareStatement(sql);
+				pstmt.setString(1, ip);
+				pstmt.setString(2,accountField.getText());
+				pstmt.executeUpdate();
+				pstmt.close();
+				conn.commit();
+			}
+			else
+			{
+				sql="INSERT INTO tb_users VALUES(?,?,?)";
+				pstmt.close();
+				pstmt=conn.prepareStatement(sql);
+				pstmt.setString(1,accountField.getText());
+				pstmt.setString(2, ip);
+				pstmt.setInt(3,8888);
+				pstmt.executeUpdate();//执行SQL
+				conn.commit();//提交数据
+			}
+			
+			
+			ChatWindow cw=new ChatWindow(accountField.getText());
+			jframe.setVisible(false);
+			
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			try {
+				conn.rollback();
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+			}
+			e1.printStackTrace();
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+		}
+		finally
+		{
+			//关闭数据库连接
+			try {
+				conn.close();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+}
